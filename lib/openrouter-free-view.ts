@@ -32,7 +32,7 @@ import type {
 	ProviderModelConfig,
 } from "@earendil-works/pi-coding-agent";
 import { toggleModelViewOverride } from "../config.ts";
-import { PROVIDER_OPENROUTER } from "../constants.ts";
+import { BASE_URL_OPENROUTER, PROVIDER_OPENROUTER } from "../constants.ts";
 import { recordAction } from "./action-log.ts";
 import { createLogger, withRunId } from "./logger.ts";
 import { type ModelView, resolveModelView } from "./registry.ts";
@@ -94,6 +94,7 @@ export function applyOpenRouterView(
 		(model) => !isChatModel(model) || isOpenRouterFreeModel(model),
 	);
 	pi.registerProvider(PROVIDER_OPENROUTER, {
+		baseUrl: BASE_URL_OPENROUTER,
 		models: models as unknown as ProviderModelConfig[],
 	});
 	overlayActive = true;
