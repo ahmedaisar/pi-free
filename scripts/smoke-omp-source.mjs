@@ -8,10 +8,10 @@
  *   bun scripts/smoke-omp-source.mjs [package-directory]
  */
 import { existsSync, readFileSync } from "node:fs";
-import { resolve, join } from "node:path";
+import { resolve, join, relative, isAbsolute } from "node:path";
 import { pathToFileURL } from "node:url";
 
-if (typeof Bun === "undefined") {
+if (!process.versions.bun) {
 	throw new Error("This smoke test must run under Bun");
 }
 
@@ -25,7 +25,8 @@ if (!Array.isArray(entries) || entries.length === 0) {
 
 for (const entry of entries) {
 	const entryPath = resolve(packageDir, entry);
-	if (!entryPath.startsWith(packageDir + "/") && entryPath !== packageDir) {
+	const relativeEntry = relative(packageDir, entryPath);
+	if (relativeEntry.startsWith("..") || isAbsolute(relativeEntry)) {
 		throw new Error(`OMP extension entry escapes package directory: ${entry}`);
 	}
 	if (!existsSync(entryPath)) {
