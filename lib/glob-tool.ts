@@ -93,15 +93,23 @@ export async function registerGlobTool(
 
 /**
  * On opencode-free turns, add the missing gate tool names to this run's
- * selected tools. This mutates `systemPromptOptions.selectedTools` for the run
- * only (Pi rebuilds it each turn), so no other provider's request changes.
+ * selected tools. When the host supplies `systemPromptOptions.selectedTools`,
+ * this mutates that run's selection only (Pi rebuilds it each turn). Some
+ * compatible hosts, including OMP, omit the options object from this event;
+ * in that case the handler must be a no-op rather than aborting agent startup.
  */
 export function addOpenCodeFreeGateTools(
-	event: { systemPromptOptions: { selectedTools: string[] } },
+	event: {
+		systemPromptOptions?: {
+			selectedTools?: string[];
+		};
+	},
 	providerId: string | undefined,
 ): void {
 	if (providerId !== PROVIDER_OPENCODE_FREE) return;
-	const selected = event.systemPromptOptions.selectedTools;
+	const selected = event.systemPromptOptions?.selectedTools;
+	if (!Array.isArray(selected)) return;
+
 	for (const name of OPENCODE_FREE_GATE_TOOLS) {
 		if (!selected.includes(name)) selected.push(name);
 	}

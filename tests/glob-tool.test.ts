@@ -98,6 +98,27 @@ describe("addOpenCodeFreeGateTools", () => {
 		]);
 	});
 
+	it("is safe when systemPromptOptions is missing on the host event", () => {
+		const event: { systemPromptOptions?: { selectedTools?: string[] } } = {};
+		expect(() => addOpenCodeFreeGateTools(event, "opencode-free")).not.toThrow();
+		expect(event).toEqual({});
+	});
+
+	it("is safe when selectedTools is missing on the host event", () => {
+		const event: { systemPromptOptions?: { selectedTools?: string[] } } = {
+			systemPromptOptions: {},
+		};
+		expect(() => addOpenCodeFreeGateTools(event, "opencode-free")).not.toThrow();
+		expect(event.systemPromptOptions).toEqual({});
+	});
+
+	it("is safe when selectedTools is not an array", () => {
+		const event = {
+			systemPromptOptions: { selectedTools: undefined },
+		};
+		expect(() => addOpenCodeFreeGateTools(event, "opencode-free")).not.toThrow();
+	});
+
 	it("does not touch other providers", () => {
 		const event = { systemPromptOptions: { selectedTools: ["read"] } };
 		addOpenCodeFreeGateTools(event, "zenmux");

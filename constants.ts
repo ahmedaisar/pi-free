@@ -44,6 +44,9 @@ export const PROVIDER_OPENCODE_FREE = "opencode-free";
 // models-only free-view overlay over it (lib/openrouter-free-view.ts).
 export const PROVIDER_OPENROUTER = "openrouter";
 
+/** OpenRouter API base URL used by OMP's custom-provider validation. */
+export const BASE_URL_OPENROUTER = "https://openrouter.ai/api/v1";
+
 // =============================================================================
 // Provider base URLs
 // =============================================================================
