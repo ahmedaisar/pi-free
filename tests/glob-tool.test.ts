@@ -98,7 +98,7 @@ describe("addOpenCodeFreeGateTools", () => {
 		]);
 	});
 
-		it("is safe when systemPromptOptions is missing on the host event", () => {
+	it("is safe when systemPromptOptions is missing on the host event", () => {
 		const event: { systemPromptOptions?: { selectedTools?: string[] } } = {};
 		expect(() => addOpenCodeFreeGateTools(event, "opencode-free")).not.toThrow();
 		expect(event).toEqual({});
