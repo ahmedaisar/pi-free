@@ -32,11 +32,21 @@ Install the published npm package:
 pi install npm:pi-free
 ```
 
-For the latest unreleased GitHub changes instead:
+For the latest GitHub source on Pi:
 
 ```bash
 pi install git:github.com/apmantza/pi-free
 ```
+
+For Oh My Pi (OMP), install the GitHub repository directly:
+
+```bash
+omp install https://github.com/ahmedaisar/pi-free
+```
+
+OMP uses the `omp.extensions` source entry because Bun intentionally skips
+lifecycle scripts for untrusted Git dependencies. Pi uses the separately
+declared compiled `pi.extensions` entry. Both entry points are checked in CI.
 
 Press `Ctrl+L` to open the model picker. The global free-only setting is enabled by default.
 
