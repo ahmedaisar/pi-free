@@ -61,6 +61,17 @@ const missingRequired = REQUIRED_HOST_PROVIDED_PACKAGES.filter(
 	(name) => !existsSync(packagePath(name)),
 );
 
+const missingRuntime = ["partial-json"].filter(
+	(name) => !existsSync(packagePath(name)),
+);
+if (missingRuntime.length > 0) {
+	console.error(
+		"[install-shape] FAILED: required runtime dependencies are missing:",
+	);
+	for (const name of missingRuntime) console.error(`  - ${name}`);
+	process.exit(1);
+}
+
 let failed = false;
 
 if (blockingVendored.length > 0) {
