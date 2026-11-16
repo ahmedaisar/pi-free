@@ -89,6 +89,9 @@
 		"typescript": "^7.0.2",
 		"vitest": "^5.0.0"
 	},
+	"dependencies": {
+		"partial-json": "0.1.7"
+	},
 	"peerDependencies": {
 		"@earendil-works/pi-ai": "^1.1.0",
 		"@earendil-works/pi-coding-agent": ">=0.86.0",
