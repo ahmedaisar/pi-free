@@ -223,11 +223,10 @@ function expectFreeView(native: ModelRuntime, runtime: ModelRuntime): void {
 		});
 	}
 	expect(nonChat(runtime)).toEqual(nonChat(native));
-	// No auth, endpoint, header, stream or refresh override: models only.
+	// No auth, header, stream or refresh override; baseUrl is validation metadata.
 	const overlay = runtime.getRegisteredProviderConfig("openrouter") ?? {};
 	expect(Object.keys(overlay).sort()).toEqual(["baseUrl", "models"]);
 	expect(overlay.baseUrl).toBe("https://openrouter.ai/api/v1");
-
 }
 
 /** One request through Pi's real dispatcher; returns the wire auth seen. */
