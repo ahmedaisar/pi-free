@@ -19,17 +19,15 @@
  *   `tsc --noEmit` (the separate, non-noCheck "Lint & type-check" job) fully
  *   type-checked against its real types; pi-tui needs neither.
  *
- * - `@earendil-works/pi-ai` is a real, static VALUE import in ~30 provider
- *   files (`import { createModels } from "@earendil-works/pi-ai"`, etc.), so
- *   it MUST stay a required (non-optional) peer: marking it optional was
- *   tried as part of this same investigation and immediately broke the full
- *   `vitest run` suite (4 test files failed with "Cannot find package
- *   '@earendil-works/pi-ai'"). `typebox` is pi-ai's own regular dependency
- *   (not pi-free's), so it is vendored as a side effect of keeping pi-ai
- *   required — pi-free's package.json has no lever to stop that without
- *   first migrating every plain top-level pi-ai import through
- *   `lib/pi-ai-loader.ts`'s disk-fallback resolver, the way `lib/lazy-compat.ts`
- *   already does. That migration is tracked separately; see the #447 PR body.
+ * - `@earendil-works/pi-ai` is a real runtime dependency: static provider
+ *   imports and `lib/pi-ai-loader.ts` need it at runtime. It is declared as
+ *   both a direct dependency and a required peer: the direct dependency makes
+ *   Git-based extension installers (which may not materialize peer deps)
+ *   self-contained, while the peer declaration documents the host API/version
+ *   contract. Keep it in REQUIRED_HOST_PROVIDED_PACKAGES so production install
+ *   checks prove it is physically present. Its transitive dependencies are
+ *   intentionally installed with the extension rather than assumed to exist
+ *   in the host package tree.
  *
  * A prior attempt (328c0cd1) moved all three peers to devDependencies
  * together and broke the "Production source install" CI job. That
