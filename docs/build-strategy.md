@@ -63,6 +63,6 @@ npx tsx scripts/bench-startup.ts warm compiled
 ```
 
 The `RESULT` line includes `entryKind`, `importMs`, `factoryMs`, and the
-import-inclusive `totalMs`. Source mode includes Bun/tsx module loading while
-compiled mode measures Node's native ESM loader; provider initialization and
+import-inclusive `totalMs`. Source mode includes the tsx loader and module graph while compiled mode
+measures Node's native ESM loader; provider initialization and
 the existing warm/cold network scenarios are kept the same.
