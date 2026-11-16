@@ -198,6 +198,43 @@ jobs:
       - name: Verify compiled entry exists
         run: test -f dist/index.js
 
+  omp-source-entry:
+    name: OMP source entry (Bun)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "22"
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: "1.4.4"
+
+      - name: Install development dependencies
+        run: npm ci --no-audit --no-fund
+
+      # OMP installs Git dependencies with Bun. Untrusted Git dependencies do
+      # not run prepare, so the source manifest entry must import directly.
+      - name: Smoke-load OMP source entry from checkout
+        run: bun scripts/smoke-omp-source.mjs
+
+      - name: Pack npm distribution
+        run: npm pack
+
+      - name: Extract package and expose test dependencies
+        shell: bash
+        run: |
+          mkdir -p .omp-package
+          tar -xzf pi-free-*.tgz -C .omp-package
+          ln -s "$PWD/node_modules" .omp-package/package/node_modules
+
+      - name: Smoke-load OMP source entry from npm tarball
+        run: bun scripts/smoke-omp-source.mjs .omp-package/package
+
   test:
     name: Unit tests (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
