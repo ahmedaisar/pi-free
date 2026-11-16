@@ -26,6 +26,12 @@
 	},
 	"files": [
 		"dist/**/*",
+		"index.ts",
+		"config.ts",
+		"constants.ts",
+		"lib/**/*",
+		"providers/**/*",
+		"provider-failover/**/*",
 		"README.md",
 		"LICENSE",
 		"CHANGELOG.md",
@@ -110,6 +116,11 @@
 	},
 	"engines": {
 		"node": ">=20.0.0"
+	},
+	"omp": {
+		"extensions": [
+			"./index.ts"
+		]
 	},
 	"pi": {
 		"extensions": [

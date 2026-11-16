@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Oh My Pi Git installs** — declare an OMP-specific TypeScript extension entry so Bun can load pi-free without running untrusted Git dependency lifecycle scripts. Pi continues to use the compiled `dist/index.js` entry; npm packages include both runtime graphs and CI smoke-tests the OMP source entry.
+
 ## [2.9.0] - 2026-11-15
 
 ### Added

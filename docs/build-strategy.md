@@ -1,8 +1,11 @@
 # Compiled packaging
 
-Compiled packaging is implemented and is the published form of pi-free. The
-working tree remains TypeScript-first for development and tests, while npm and
-Pi load the plain Node ESM output in `dist/`.
+pi-free supports two extension loaders with different entry-point requirements:
+
+- **Pi** loads the compiled Node ESM output at `dist/index.js`.
+- **Oh My Pi (OMP)** installs Git dependencies with Bun. Bun intentionally does not run lifecycle scripts for untrusted Git dependencies, so a Git install cannot rely on `prepare` to create `dist/`. OMP therefore loads the TypeScript source entry at `index.ts`.
+
+The package declares both manifests: `pi.extensions` points to `./dist/index.js`, while `omp.extensions` points to `./index.ts`. OMP prefers its native `omp` manifest; Pi continues to use the `pi` manifest. This keeps Pi's compiled runtime contract intact while making direct Git installs in OMP deterministic without executing install-time build scripts.
 
 ## Build
 
@@ -11,8 +14,7 @@ Pi load the plain Node ESM output in `dist/`.
 `index.ts` as ES2022 JavaScript, keeps peer imports external, and uses
 `rewriteRelativeImportExtensions` so source `.ts` imports become `.js` imports.
 The build also copies `provider-failover/benchmarks.json` to the matching
-`dist/provider-failover/` path; the benchmark loader resolves it relative to
-`import.meta.url`.
+`dist/provider-failover/` path.
 
 ```sh
 npm run build       # clean and emit dist/
@@ -22,18 +24,9 @@ npm run test:run    # source-mode tests
 npm run smoke:compiled
 ```
 
-`prepare` runs the build for git/file installs and before npm packaging. The
-published `pi.extensions` entry and `main` are both `./dist/index.js`. The
-package `files` list publishes `dist/` plus user-facing documentation and the
-relative-import checker; source TypeScript, tests, and development scripts are
-not published. `dist/` is ignored and is intentionally not committed.
+`prepare` builds the compiled entry for npm packaging and compatible Git installers. It is not required for OMP Git installs: Bun skips lifecycle scripts for untrusted Git dependencies by design. The OMP entry is source-first and imports the checked-in TypeScript graph directly.
 
-Git installs omit devDependencies, so `scripts/build.mjs` uses the local
-TypeScript compiler during development and falls back to a pinned transient
-`npx` compiler during `prepare`. The build tsconfig is emit-only (`noCheck` and
-`types: []`); CI runs the full source type-check separately. This keeps
-`npm install --omit=dev`—the path used by `pi install git:...`—self-contained
-without requiring users to repair or manually populate `node_modules`.
+The npm package includes both the compiled `dist/` output and the source files required by OMP's `index.ts` entry. The package tarball is checked for both manifest entries and their relative import closure.
 
 ## Validation
 
@@ -45,29 +38,19 @@ npm run check
 npm pack
 node scripts/check-tarball.mjs ./pi-free-*.tgz
 node scripts/smoke-compiled.mjs ./dist/index.js
+bun scripts/smoke-omp-source.mjs
 ```
 
-The tarball checker verifies the compiled entry, benchmark JSON, package
-metadata, safe contents, relative imports, and (when run after `npm ci`) loads
-the extracted compiled entry with the local peer dependencies. CI also packs,
-installs, checks, and loads the entry from the installed package on Linux,
-macOS, and Windows. `npm publish --dry-run` runs the same build lifecycle.
+CI validates the compiled Pi entry and separately imports the OMP TypeScript entry using Bun, including the source tree extracted from the npm tarball. This specifically guards against regressions where a Git install has a manifest entry that exists only after a lifecycle build.
 
 Dynamic imports remain unbundled, with one deliberate exception: the
 last-resort pi-ai fallback bundles in `dist/vendor/` (`pi-ai-compat.js`,
-`pi-ai-providers-all.js`). Bun-compiled pi binaries (scoop/winget/standalone
-zip) cannot resolve bare specifiers from external files at all, so no on-disk
-pi-ai layout can serve pi-free's runtime imports there (#502); the bundles
-inline every transitive dependency (only `node:*` builtins stay external) and
-are imported by absolute file path from `lib/pi-ai-loader.ts` only when no real
-pi-ai package resolves on disk. `scripts/build.mjs` builds them with the local
-esbuild during development and a pinned transient `npx` esbuild during
-`prepare` (same strategy as the compiler). The OpenCode and
-`opencode-session` paths otherwise continue to use runtime specifier
-resolution, so the compiled output must be tested with the host Pi peer
-packages available. The build targets Node `>=20.0.0`; except for the
-self-contained `dist/vendor/` fallback bundles, it does not bundle or install
-Pi peer packages.
+`pi-ai-providers-all.js`). Bun-compiled Pi binaries cannot resolve bare
+specifiers from external files at all, so no on-disk pi-ai layout can serve
+pi-free's runtime imports there; the bundles inline transitive dependencies
+and are imported only when no real pi-ai package resolves on disk. The OpenCode
+paths otherwise continue to use runtime specifier resolution, so the compiled
+output must be tested with the host Pi peer packages available.
 
 ## Startup comparison
 
@@ -80,8 +63,6 @@ npx tsx scripts/bench-startup.ts warm compiled
 ```
 
 The `RESULT` line includes `entryKind`, `importMs`, `factoryMs`, and the
-import-inclusive `totalMs`. `importMs` includes the `tsx` loader and module
-graph in source mode, while compiled mode measures Node's native ESM loader;
-provider initialization and the existing warm/cold network scenarios are kept
-the same. The benchmark requires `dist/` for compiled mode and does not
-exercise provider API calls beyond its existing mocked scenarios.
+import-inclusive `totalMs`. Source mode includes the tsx loader and module graph while compiled mode
+measures Node's native ESM loader; provider initialization and
+the existing warm/cold network scenarios are kept the same.
