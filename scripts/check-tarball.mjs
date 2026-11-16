@@ -82,6 +82,9 @@ const entrySet = new Set(entries);
 const required = [
 	"package/package.json",
 	"package/dist/index.js",
+	"package/index.ts",
+	"package/config.ts",
+	"package/constants.ts",
 	"package/dist/provider-failover/benchmarks.json",
 	"package/README.md",
 	"package/CHANGELOG.md",
@@ -127,6 +130,17 @@ try {
 	if (!Array.isArray(extensions) || extensions.length === 0) {
 		fail("package.json has no pi.extensions entries");
 	}
+	const ompExtensions = pkg.omp?.extensions ?? [];
+	if (!Array.isArray(ompExtensions) || ompExtensions.length === 0) {
+		fail("package.json has no omp.extensions entries");
+	}
+	for (const extension of ompExtensions) {
+		const normalized = String(extension).replace(/^\\.\\//, "");
+		if (!entrySet.has(`package/${normalized}`)) {
+			fail(`omp.extensions entry missing from tarball: ${extension}`);
+		}
+		console.log(`OK: omp.extensions -> ${extension}`);
+	}
 	let compiledEntry;
 	for (const extension of extensions) {
 		const normalized = String(extension).replace(/^\.\//, "");
@@ -150,6 +164,15 @@ try {
 	// Always validate JavaScript syntax. When run from a checkout after npm ci,
 	// temporarily link its peer dependencies so Node can import the extracted
 	// package exactly like the installed package smoke check does.
+	// Verify the full source + compiled relative-import closure in the exact
+	// extracted package. OMP consumes the source entry; Pi consumes dist/.
+	execFileSync(
+		process.execPath,
+		[join(packageDir, "scripts", "check-extensions.mjs"), packageDir],
+		{ stdio: "inherit" },
+	);
+	console.log("OK: source and compiled relative-import closure");
+
 	const projectNodeModules = join(process.cwd(), "node_modules");
 	const extractedNodeModules = join(packageDir, "node_modules");
 	if (existsSync(projectNodeModules)) {
