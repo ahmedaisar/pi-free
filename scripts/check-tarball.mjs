@@ -135,7 +135,7 @@ try {
 		fail("package.json has no omp.extensions entries");
 	}
 	for (const extension of ompExtensions) {
-		const normalized = String(extension).replace(/^\\.\\//, "");
+		const normalized = String(extension).replace(/^\.\//, "");
 		if (!entrySet.has(`package/${normalized}`)) {
 			fail(`omp.extensions entry missing from tarball: ${extension}`);
 		}
