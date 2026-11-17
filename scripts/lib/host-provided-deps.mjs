@@ -21,9 +21,7 @@
  *
  * - `@earendil-works/pi-ai` is a real runtime dependency: static provider
  *   imports and `lib/pi-ai-loader.ts` need it at runtime. It is declared as
- *   both a direct dependency and a required peer: the direct dependency makes
- *   Git-based extension installers (which may not materialize peer deps)
- *   self-contained, while the peer declaration documents the host API/version
+ *   a required peer: the peer declaration documents the host API/version
  *   contract. Keep it in REQUIRED_HOST_PROVIDED_PACKAGES so production install
  *   checks prove it is physically present. Its transitive dependencies are
  *   intentionally installed with the extension rather than assumed to exist
